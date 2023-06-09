@@ -1,9 +1,10 @@
 package clients
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	models "github.com/gabrieldebem/clickup/packages/Models"
@@ -16,62 +17,95 @@ type ClickUpClient struct {
     TeamId string
     FolderId string
     ListId string
+    UserId string
 }
 
-func (c ClickUpClient) GetAuthorizadedUser() models.UserResponse {
-  req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/user", nil)
-  req.Header.Add("Authorization", c.Token)
-  res, _ := http.DefaultClient.Do(req)
-  defer res.Body.Close()
-  body, _ := ioutil.ReadAll(res.Body)
-
-  var users models.UserResponse
-
-  err := json.Unmarshal(body, &users)
-
-  if err != nil {
-    fmt.Println(err)
-  }
-
-  fmt.Println(users.User.Username)
-  fmt.Println(users.User.Id)
-
-  return users
-}
-
-func (c ClickUpClient) GetFolders() models.FolderResponse {
-  req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/space/" + c.SpaceId + "/folder", nil)
-
-  query := req.URL.Query()
-  query.Add("archived", "false")
-  req.URL.RawQuery = query.Encode()
-  
-  req.Header.Add("Authorization", c.Token)
-  
-  res, _ := http.DefaultClient.Do(req)
-  
-  defer res.Body.Close()
-  body, _ := ioutil.ReadAll(res.Body)
-
-  var folders models.FolderResponse
-  json.Unmarshal(body, &folders)
-
-  for _, folder := range folders.Folders {
-    fmt.Println(folder.Name)
-    fmt.Println(folder.Id)
-  }
-
-  return folders
-}
-
-func (c ClickUpClient) GetTeams() models.TeamResponse {
-    req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/team", nil)
+func (c ClickUpClient) baseClient(method string, path string, body io.Reader) *http.Request {
+    req, err := http.NewRequest(method, c.BaseUrl + path, body)
     req.Header.Add("Authorization", c.Token)
+
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    return req
+}
+
+func handleError(res *http.Response) {
+    body, _ := io.ReadAll(res.Body)
+
+    var err models.Error
+    json.Unmarshal(body, &err)
+
+    fmt.Println(err.Err)
+}
+
+func (c ClickUpClient) GetAuthorizadedUser() (users models.UserResponse) {
+    req := c.baseClient("GET", "/v2/user", nil)
     res, _ := http.DefaultClient.Do(req)
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
     defer res.Body.Close()
-    body, _ := ioutil.ReadAll(res.Body)
-    
-    var teams models.TeamResponse
+
+
+    body, _ := io.ReadAll(res.Body)
+
+    err := json.Unmarshal(body, &users)
+
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    fmt.Println(users.User.Username)
+    fmt.Println(users.User.Id)
+
+    return
+}
+
+func (c ClickUpClient) GetFolders() (folders models.FolderResponse) {
+    req := c.baseClient("GET", "/v2/space/" + c.SpaceId + "/folder", nil)
+
+    query := req.URL.Query()
+    query.Add("archived", "false")
+    req.URL.RawQuery = query.Encode()
+
+    res, _ := http.DefaultClient.Do(req)
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
+    defer res.Body.Close()
+    body, _ := io.ReadAll(res.Body)
+
+    json.Unmarshal(body, &folders)
+
+    for _, folder := range folders.Folders {
+        fmt.Println(folder.Name)
+        fmt.Println(folder.Id)
+    }
+
+    return
+}
+
+func (c ClickUpClient) GetTeams() (teams models.TeamResponse) {
+    req := c.baseClient("GET", "/v2/team", nil)
+    res, _ := http.DefaultClient.Do(req)
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
+    defer res.Body.Close()
+
+    body, _ := io.ReadAll(res.Body)
+
     err := json.Unmarshal(body, &teams)
 
     if err != nil {
@@ -83,17 +117,22 @@ func (c ClickUpClient) GetTeams() models.TeamResponse {
         fmt.Println(team.Id)
     }
 
-    return teams
+    return
 }
 
-func (c ClickUpClient) GetSpaces() models.SpaceResponse {
-    req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/team/" + c.TeamId + "/space", nil)
-    req.Header.Add("Authorization", c.Token)
+func (c ClickUpClient) GetSpaces() (spaces models.SpaceResponse) {
+    req := c.baseClient("GET", "/v2/team/" + c.TeamId + "/space", nil)
     res, _ := http.DefaultClient.Do(req)
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
     defer res.Body.Close()
-    body, _ := ioutil.ReadAll(res.Body)
-    
-    var spaces models.SpaceResponse
+
+    body, _ := io.ReadAll(res.Body)
+
     err := json.Unmarshal(body, &spaces)
 
     if err != nil {
@@ -104,18 +143,22 @@ func (c ClickUpClient) GetSpaces() models.SpaceResponse {
         fmt.Println(space.Name)
         fmt.Println(space.Id)
     }
-    
-    return spaces
+
+    return
 }
 
-func (c ClickUpClient) GetLists() models.ListResponse {
-    req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/folder/" + c.FolderId + "/list", nil)
-    req.Header.Add("Authorization", c.Token)
+func (c ClickUpClient) GetLists() (lists models.ListResponse) {
+    req := c.baseClient("GET", "/v2/folder/" + c.FolderId + "/list", nil)
     res, _ := http.DefaultClient.Do(req)
     defer res.Body.Close()
-    body, _ := ioutil.ReadAll(res.Body)
-    
-    var lists models.ListResponse
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
+    body, _ := io.ReadAll(res.Body)
+
     err := json.Unmarshal(body, &lists)
     if err != nil {
         fmt.Println(err)
@@ -125,18 +168,29 @@ func (c ClickUpClient) GetLists() models.ListResponse {
         fmt.Println(list.Name)
         fmt.Println(list.Id)
     }
-    
-    return lists
+
+    return
 }
 
-func (c ClickUpClient) GetTasks() models.TaskResponse {
-    req, _ := http.NewRequest("GET", c.BaseUrl + "/v2/list/" + c.ListId + "/task", nil)
-    req.Header.Add("Authorization", c.Token)
+func (c ClickUpClient) GetTasks(onlyMine bool) (tasks models.TaskResponse) {
+    req := c.baseClient("GET", "/v2/list/" + c.ListId + "/task", nil)
+
+    if(onlyMine) {
+        query := req.URL.Query()
+        query.Add("assignees[]", c.UserId)
+        req.URL.RawQuery = query.Encode()
+    }
+
     res, _ := http.DefaultClient.Do(req)
     defer res.Body.Close()
-    body, _ := ioutil.ReadAll(res.Body)
-    
-    var tasks models.TaskResponse
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
+    body, _ := io.ReadAll(res.Body)
+
     err := json.Unmarshal(body, &tasks)
     if err != nil {
         fmt.Println(err)
@@ -146,7 +200,56 @@ func (c ClickUpClient) GetTasks() models.TaskResponse {
         fmt.Println(task.Name)
         fmt.Println(task.Id)
     }
-    
-    return tasks
+
+    return
+}
+
+func (c ClickUpClient) FindTask(id string) (task models.Task) {
+    req := c.baseClient("GET", "/v2/task/" + id, nil)
+    res, _ := http.DefaultClient.Do(req)
+    defer res.Body.Close()
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+        return
+    }
+
+    body, _ := io.ReadAll(res.Body)
+
+    err := json.Unmarshal(body, &task)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    fmt.Println(task.Name + "\n")
+    fmt.Println(task.Status.Status + "\n")
+    fmt.Println(task.TextContent + "\n")
+
+    return task
+}
+
+func (c ClickUpClient) UpdateTask(task string, status string) (taskResp models.Task) {
+    reqBody := []byte(`{"status": "` + status + `"}`)
+
+    req := c.baseClient("PUT", "/v2/task/" + task, bytes.NewBuffer(reqBody))
+    req.Header.Add("Content-Type", "application/json")
+    res, _ := http.DefaultClient.Do(req)
+    defer res.Body.Close()
+
+    if (res.StatusCode >= 400) {
+        handleError(res)
+    }
+
+    body, _ := io.ReadAll(res.Body)
+
+    err := json.Unmarshal(body, &taskResp)
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    fmt.Println(taskResp.Name + "\n")
+    fmt.Println(taskResp.Status.Status + "\n")
+
+    return
 }
 

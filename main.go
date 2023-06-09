@@ -30,5 +30,26 @@ func main() {
         ListId: listId,
     }
 
-    client.GetAuthorizadedUser()
+    args := os.Args[1:]
+
+    if len(args) == 0 {
+        fmt.Println("Please, provide a command")
+    }
+
+    switch args[0] {
+    case "get-user":
+        client.GetAuthorizadedUser()
+    case "get-lists":
+        client.GetLists()
+        case "get-folders":
+        client.GetFolders()
+    case "get-tasks":
+        client.GetTasks()
+        case "get-spaces":
+        client.GetSpaces()
+    case "get-teams":
+        client.GetTeams()
+    default:
+        fmt.Println("Command not found")
+    }
 }

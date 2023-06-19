@@ -1,97 +1,100 @@
-Aqui está um exemplo de README.md para o seu projeto CLI do ClickUp em Golang:
-
-```markdown
 # ClickUp CLI
 
-Este é um CLI (Command-Line Interface) para interagir com a API do ClickUp usando Golang.
+This command-line interface (CLI) allows you to interact with ClickUp, a project management tool, using the Go programming language. With this CLI, you can perform various operations on ClickUp tickets.
 
-## Pré-requisitos
+## Prerequisites
 
-Certifique-se de ter o Golang instalado no seu sistema.
+Before using this CLI, make sure you have the following installed:
 
-## Instalação
+- Go programming language (version 1.13 or later)
+- ClickUp API token
 
-1. Clone este repositório para o seu diretório local:
+## Installation
 
-   ```bash
-   git clone https://github.com/seu-usuario/clickup-cli.git
+To install the ClickUp CLI, follow these steps:
+
+1. Clone the repository:
+
+   ```shell
+   git clone https://github.com/gabrieldebem/clickup.git
    ```
 
-2. Navegue até o diretório do projeto:
+2. Change to the project directory:
 
-   ```bash
-   cd clickup-cli
+   ```shell
+   cd clickup
    ```
 
-3. Compile o código fonte:
+3. Install the dependencies:
 
-   ```bash
-   go build
+   ```shell
+   go mod download
    ```
 
-4. Execute o CLI:
+4. Build the CLI:
 
-   ```bash
-   ./clickup-cli
+   ```shell
+   go build -o clickup-cli
    ```
 
-## Configuração
+## Usage
 
-Antes de executar o CLI, você precisa configurar as seguintes variáveis de ambiente:
+The CLI supports the following commands:
 
-- `CLICKUP_BASE_URL`: A URL base da API do ClickUp.
-- `CLICKUP_TOKEN`: O token de autenticação para acessar a API do ClickUp.
-- `CLICKUP_SPACE_ID`: O ID do espaço no ClickUp.
-- `CLICKUP_TEAM_ID`: O ID da equipe no ClickUp.
-- `CLICKUP_FOLDER_ID`: O ID da pasta no ClickUp.
-- `CLICKUP_LIST_ID`: O ID da lista no ClickUp.
+### List Tickets
 
-Certifique-se de definir essas variáveis de ambiente antes de executar o CLI. Você pode fazer isso manualmente ou usando um arquivo `.env`.
+To list all the tickets from the folder provided, use the `list` command:
 
-## Comandos Disponíveis
-
-- `get-user`: Obtém informações do usuário autorizado.
-- `get-folders`: Obtém todas as pastas do espaço atual.
-- `get-teams`: Obtém todas as equipes do usuário.
-- `get-spaces`: Obtém todos os espaços da equipe atual.
-- `get-lists`: Obtém todas as listas da pasta atual.
-- `get-tasks`: Obtém todas as tarefas da lista atual.
-
-Para executar um comando, use o seguinte formato:
-
-```bash
-./clickup-cli <comando>
+```shell
+./clickup-cli list
 ```
 
-## Exemplo de Uso
+You can add the `--only-mine` flag to list only your assigned tickets:
 
-```bash
-# Obtém informações do usuário autorizado
-./clickup-cli get-user
-
-# Obtém todas as pastas do espaço atual
-./clickup-cli get-folders
-
-# Obtém todas as equipes do usuário
-./clickup-cli get-teams
-
-# Obtém todos os espaços da equipe atual
-./clickup-cli get-spaces
-
-# Obtém todas as listas da pasta atual
-./clickup-cli get-lists
-
-# Obtém todas as tarefas da lista atual
-./clickup-cli get-tasks
+```shell
+./clickup-cli list --only-mine
 ```
 
-## Contribuição
+### Show Ticket
 
-Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue ou enviar um pull request.
+To view the details of a specific ticket, use the `show` command followed by the ticket ID:
 
-## Licença
-
-Este projeto está licenciado sob a [MIT License](LICENSE).
+```shell
+./clickup-cli show <ticket-id>
 ```
 
-Lembre-se de substituir `seu-usuario` no link do repositório e personalizar o README.md conforme necessário. Certifique-se de fornecer informações adicionais, como a instalação de dependências, se houver.
+Replace `<ticket-id>` with the actual ID of the ticket you want to show.
+
+### Update Ticket
+
+To update the status of a ticket, use the `update` command followed by the ticket ID and the new status:
+
+```shell
+./clickup-cli update <ticket-id> <new-status>
+```
+
+Replace `<ticket-id>` with the actual ID of the ticket you want to update, and `<new-status>` with the desired status.
+
+## Configuration
+
+Before using the CLI, make sure to set your ClickUp API token. Create a `.env` file in the project directory and add the following line:
+
+```
+CLICKUP_BASE_URL="https://api.clickup.com/api"
+CLICKUP_API_TOKEN=<your-api-token>
+CLICKUP_SPACE_ID=<your-space-id>
+CLICKUP_TEAM_ID=<your-team-id>
+CLICKUP_FOLDER_ID<your-folder-id>=
+CLICKUP_LIST_ID=<your-list-id>
+CLICKUP_USER_ID=<your-user-id>
+```
+
+Replace all values with your actual ClickUp API credentials.
+
+## Contributions
+
+Contributions to this CLI are welcome. Feel free to submit bug reports, feature requests, or pull requests on the [GitHub repository](https://github.com/gabrieldebem/clickup-cli).
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).

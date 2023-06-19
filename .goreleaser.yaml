@@ -1,0 +1,8 @@
+builds:
+  - main: ./main.go
+    id: "cmd"
+    binary: clickup
+    goos:
+      - linux
+      - darwin
+      - windows

@@ -16,7 +16,7 @@ To install the ClickUp CLI, follow these steps:
 1. Clone the repository:
 
    ```shell
-   git clone https://github.com/gabrieldebem/clickup.git
+   git clone https://github.com/gabrieldebem/clickup-cli.git
    ```
 
 2. Change to the project directory:
@@ -77,7 +77,7 @@ Replace `<ticket-id>` with the actual ID of the ticket you want to update, and `
 
 ## Configuration
 
-Before using the CLI, make sure to set your ClickUp API token. Create a `.env` file in the project directory and add the following line:
+Before using the CLI, make sure to set your ClickUp API token. Create a `/.clickup/.env` file on your `$HOME` and add the following line:
 
 ```
 CLICKUP_BASE_URL="https://api.clickup.com/api"

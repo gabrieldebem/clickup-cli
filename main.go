@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	godotenv.Load()
+	godotenv.Load(os.Getenv("HOME") + "/.clickup/.env")
 
 	args := os.Args[1:]
 

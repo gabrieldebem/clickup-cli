@@ -4,7 +4,7 @@ import (
 	clients "github.com/gabrieldebem/clickup/packages/Clients"
 )
 
-func GetTickets(c clients.ClickUpClient, onlyMine bool) string {
+func GetTickets(c *clients.ClickUpClient, onlyMine bool) string {
 	taskResponse := c.GetTasks(onlyMine)
 
 	var resp string

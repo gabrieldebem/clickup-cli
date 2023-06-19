@@ -3,8 +3,10 @@ package clients
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	models "github.com/gabrieldebem/clickup/packages/Models"
 )
@@ -28,9 +30,12 @@ func (c ClickUpClient) baseClient(method string, path string, body io.Reader) *h
 
 func handleError(res *http.Response) {
 	body, _ := io.ReadAll(res.Body)
+    var err models.Error
 
-	var err models.Error
 	json.Unmarshal(body, &err)
+    fmt.Println("Error: " + err.Err)
+
+    return
 }
 
 func (c ClickUpClient) GetAuthorizadedUser() (users models.UserResponse) {
@@ -38,7 +43,8 @@ func (c ClickUpClient) GetAuthorizadedUser() (users models.UserResponse) {
 	res, _ := http.DefaultClient.Do(req)
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
+
 		return
 	}
 
@@ -61,7 +67,8 @@ func (c ClickUpClient) GetFolders() (folders models.FolderResponse) {
 	res, _ := http.DefaultClient.Do(req)
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
+
 		return
 	}
 
@@ -78,7 +85,7 @@ func (c ClickUpClient) GetTeams() (teams models.TeamResponse) {
 	res, _ := http.DefaultClient.Do(req)
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
 		return
 	}
 
@@ -96,7 +103,7 @@ func (c ClickUpClient) GetSpaces() (spaces models.SpaceResponse) {
 	res, _ := http.DefaultClient.Do(req)
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
 		return
 	}
 
@@ -115,7 +122,7 @@ func (c ClickUpClient) GetLists() (lists models.ListResponse) {
 	defer res.Body.Close()
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
 		return
 	}
 
@@ -139,7 +146,7 @@ func (c ClickUpClient) GetTasks(onlyMine bool) (tasks models.TaskResponse) {
 	defer res.Body.Close()
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
 		return
 	}
 
@@ -156,7 +163,7 @@ func (c ClickUpClient) FindTask(id string) (task models.Task) {
 	defer res.Body.Close()
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
 		return
 	}
 
@@ -164,7 +171,7 @@ func (c ClickUpClient) FindTask(id string) (task models.Task) {
 
 	json.Unmarshal(body, &task)
 
-	return task
+	return
 }
 
 func (c ClickUpClient) UpdateTask(task string, status string) (taskResp models.Task) {
@@ -176,7 +183,8 @@ func (c ClickUpClient) UpdateTask(task string, status string) (taskResp models.T
 	defer res.Body.Close()
 
 	if res.StatusCode >= 400 {
-		handleError(res)
+        handleError(res)
+        return
 	}
 
 	body, _ := io.ReadAll(res.Body)
@@ -184,4 +192,16 @@ func (c ClickUpClient) UpdateTask(task string, status string) (taskResp models.T
 	json.Unmarshal(body, &taskResp)
 
 	return
+}
+
+func GetClickUpInstance() *ClickUpClient {
+	return &ClickUpClient{
+		BaseUrl:  os.Getenv("CLICKUP_BASE_URL"),
+		Token:    os.Getenv("CLICKUP_TOKEN"),
+		SpaceId:  os.Getenv("CLICKUP_SPACE_ID"),
+		ListId:   os.Getenv("CLICKUP_LIST_ID"),
+		FolderId: os.Getenv("CLICKUP_FOLDER_ID"),
+		TeamId:   os.Getenv("CLICKUP_TEAM_ID"),
+		UserId:   os.Getenv("CLICKUP_USER_ID"),
+	}
 }
